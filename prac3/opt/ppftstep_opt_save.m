@@ -1,7 +1,7 @@
 function ppftstep_opt_save(Ain,Scal,Tvec,L0in,Rein)
 %inicialitza tots els vectors i només guarda cada 100 tots els valors
 % Channel flow (BDF4 + mAB4 or IMEX4)
-    Time = Tvec(end); k0 = 2*pi/L0in ; dt = 0.01 ; iter = round(Time/dt); savetime=100;
+    Time = Tvec(end)-Tvec(1); k0 = 2*pi/L0in ; dt = 0.01 ; iter = round(Time/dt); savetime=100;
     L = 21 ; M = 40 ; Lmax = L ; Lmax2 = (3*Lmax+1)/2 ; 
  
 % Initial Condition
@@ -35,13 +35,13 @@ function ppftstep_opt_save(Ain,Scal,Tvec,L0in,Rein)
     
 % ***************************   TIME STEPPING ************************
 % Time specs and initial condition
-  t = 3*dt ; 
+  t = 3*dt+Tvec(1) ; 
   
   [X,Y] = ndgrid(x,y); 
 
 % Monitoring variables
   tvec=(0:3)*dt; 
-  tvec2 = [tvec(1:4) (1:(round(iter/savetime)-1))*dt*savetime];
+  tvec2 = [tvec(1:4) (1:(round(iter/savetime)-1))*dt*savetime]+Tvec(1);
   tvec=tvec2;
   avec=zeros(1,round(iter/savetime)+3);
   avec(1:4) = [norm(a0) norm(a1) norm(a2) norm(a3)] ; 
