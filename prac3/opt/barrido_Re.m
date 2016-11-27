@@ -5,10 +5,10 @@
 L0=6.1570;
 L0name=num2str(L0+1e-12,'%5.2f');
 ii=find(L0name == '.') ; L0name(ii)='p';
-Reold=5003;
+Reold=4500;
 Restep=50;
-Re=4950;
-Tintegration=2000; %perque no doni error al llegir el fitxer de Re=5003
+Re=4450;
+Tintegration=20000; 
 for ii=1:50
     Re
     Reold
