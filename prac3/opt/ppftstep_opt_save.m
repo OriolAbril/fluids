@@ -99,7 +99,10 @@ function ppftstep_opt_save(Ain,Scal,Tvec,L0in,Rein)
    end
    
    % Writing data
-   % if mod(itime,5000) == 0 | itime == iter
+   if mod(itime,5000) == 0
+    save(fileampli,'tvec', 'tvec2', 'avec', 'covec',...
+             'amps','Lmax','coveceven','covecodd')
+   end
    [ii1,ii2,foo]=find(abs(Tvec-t)<1e-6);
    if length(ii2) > 0
        %[t ii2]
