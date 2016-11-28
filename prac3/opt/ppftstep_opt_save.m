@@ -41,20 +41,20 @@ function ppftstep_opt_save(Ain,Scal,Tvec,L0in,Rein)
 
 % Monitoring variables
   tvec=(0:3)*dt; 
-  tvec2 = [tvec(1:4) (1:(round(iter/savetime)-1))*dt*savetime]+Tvec(1);
+  tvec2 = [tvec(1:4) (1:(round(iter/savetime)))*dt*savetime]+Tvec(1);
   tvec=tvec2;
-  avec=zeros(1,round(iter/savetime)+3);
+  avec=zeros(1,round(iter/savetime)+4);
   avec(1:4) = [norm(a0) norm(a1) norm(a2) norm(a3)] ; 
   l = 5 ; lM =  l + Lmax + 1 ; 
-  covec=zeros(1,round(iter/savetime)+3);
+  covec=zeros(1,round(iter/savetime)+4);
   covec(1:4) = [a0(lM,2) a1(lM,2) a2(lM,2) a3(lM,2)]; 
   l = 5 ; lM =  l + Lmax + 1 ; 
-  coveceven=zeros(1,round(iter/savetime)+3);
-  covecodd=zeros(1,round(iter/savetime)+3);
+  coveceven=zeros(1,round(iter/savetime)+4);
+  covecodd=zeros(1,round(iter/savetime)+4);
   coveceven(1:4) = [a0(lM,1) a1(lM,1) a2(lM,1) a3(lM,1)];
   covecodd(1:4) = [a0(lM,2) a1(lM,2) a2(lM,2) a3(lM,2)];
 
-  amps = zeros(Lmax+1,round(iter/savetime)+3); ampaux = zeros(Lmax+1,1) ;
+  amps = zeros(Lmax+1,round(iter/savetime)+4); ampaux = zeros(Lmax+1,1) ;
   for ii = 1:Lmax + 1; ampaux(ii) = norm(a0(ii,:)); end ; amps(:,1) = ampaux;
   for ii = 1:Lmax + 1; ampaux(ii) = norm(a1(ii,:)); end ; amps(:,2) = ampaux;
   for ii = 1:Lmax + 1; ampaux(ii) = norm(a2(ii,:)); end ; amps(:,3) = ampaux;
@@ -99,7 +99,10 @@ function ppftstep_opt_save(Ain,Scal,Tvec,L0in,Rein)
    end
    
    % Writing data
-   % if mod(itime,5000) == 0 | itime == iter
+   if mod(itime,5000) == 0
+    save(fileampli,'tvec', 'tvec2', 'avec', 'covec',...
+             'amps','Lmax','coveceven','covecodd')
+   end
    [ii1,ii2,foo]=find(abs(Tvec-t)<1e-6);
    if length(ii2) > 0
        %[t ii2]
