@@ -43,4 +43,17 @@ title('2-Norm of the perturbation field (basic flow not included)','fontsize',16
 xlabel('Time','fontsize',16)
 set(gca,'fontsize',16)
 
+figure(4)
+dt = tvec(2)-tvec(1) ; t = tvec ; x = real(avec) ;
+L = length(t); N = 2^(nextpow2(L)-1); fs = 1/dt;
+length(avec)-N+1
+y1 = fft(avec(end-N+1:end),N);
+power1 = y1.*conj(y1)/N;
+f = 2*pi*(0:N-1)*(fs/N);     % Angular Frequency range
+semilogy(f,power1)
+axis([0 fs/10 1e-9 1e3])
+xlabel('Frequency (rad/u.t.)','fontsize',14)
+ylabel('Power (avec)','fontsize',14)
+set(gca,'fontsize',14)
+
 
