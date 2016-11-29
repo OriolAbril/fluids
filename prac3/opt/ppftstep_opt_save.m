@@ -68,7 +68,6 @@ function ppftstep_opt_save(Ain,Scal,Tvec,L0in,Rein)
 % BD4mAB4  
   h = waitbar(0,'Progress');
   for itime = 3:iter
-      waitbar(itime/iter);
 
    for l = 0:Lmax
     lM = l + Lmax + 1 ; 
@@ -96,6 +95,7 @@ function ppftstep_opt_save(Ain,Scal,Tvec,L0in,Rein)
       covec(itime/savetime+4) = a3(lM,2); 
       coveceven(itime/savetime+4) = a3(lM,1); 
       covecodd(itime/savetime+4) = a3(lM,2);
+      waitbar(itime/iter);
    end
    
    % Writing data
