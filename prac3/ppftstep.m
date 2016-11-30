@@ -1,7 +1,7 @@
-function ppftstep_opt(Ain,Scal,Tvec,L0in,Rein)
-%inicialitza tots els vectors i guarda cada 100 les amplituds i la resta de valors a cada iteracio
+function ppftstep(Ain,Scal,Tvec,L0in,Rein)
+ 
 % Channel flow (BDF4 + mAB4 or IMEX4)
-    Time = Tvec(end); k0 = 2*pi/L0in ; dt = 0.01 ; iter = round(Time/dt); savetime=100;
+    Time = Tvec(end); k0 = 2*pi/L0in ; dt = 0.01 ; iter = round(Time/dt);
     L = 21 ; M = 40 ; Lmax = L ; Lmax2 = (3*Lmax+1)/2 ; 
  
 % Initial Condition
@@ -40,24 +40,19 @@ function ppftstep_opt(Ain,Scal,Tvec,L0in,Rein)
   [X,Y] = ndgrid(x,y); 
 
 % Monitoring variables
-  tvec=(0:iter)*dt; 
-  tvec2 = [tvec(1:4) (1:round(iter/savetime))*dt*savetime];
-  avec=zeros(1,iter+1);
-  avec(1:4) = [norm(a0) norm(a1) norm(a2) norm(a3)] ; 
+  tvec = [0 dt 2*dt 3*dt] ; 
+  avec = [norm(a0) norm(a1) norm(a2) norm(a3)] ; tvec2 = tvec;
   l = 5 ; lM =  l + Lmax + 1 ; 
-  covec=zeros(1,iter+1);
-  covec(1:4) = [a0(lM,2) a1(lM,2) a2(lM,2) a3(lM,2)]; 
+  covec = [a0(lM,2) a1(lM,2) a2(lM,2) a3(lM,2)];
   l = 5 ; lM =  l + Lmax + 1 ; 
-  coveceven=zeros(1,iter+1);
-  covecodd=zeros(1,iter+1);
-  coveceven(1:4) = [a0(lM,1) a1(lM,1) a2(lM,1) a3(lM,1)];
-  covecodd(1:4) = [a0(lM,2) a1(lM,2) a2(lM,2) a3(lM,2)];
+  coveceven = [a0(lM,1) a1(lM,1) a2(lM,1) a3(lM,1)];
+  covecodd = [a0(lM,2) a1(lM,2) a2(lM,2) a3(lM,2)];
 
-  amps = zeros(Lmax+1,round(iter/savetime)+4); ampaux = zeros(Lmax+1,1) ;
-  for ii = 1:Lmax + 1; ampaux(ii) = norm(a0(ii,:)); end ; amps(:,1) = ampaux;
-  for ii = 1:Lmax + 1; ampaux(ii) = norm(a1(ii,:)); end ; amps(:,2) = ampaux;
-  for ii = 1:Lmax + 1; ampaux(ii) = norm(a2(ii,:)); end ; amps(:,3) = ampaux;
-  for ii = 1:Lmax + 1; ampaux(ii) = norm(a3(ii,:)); end ; amps(:,4) = ampaux;
+  amps = zeros(Lmax+1,1); ampaux = amps ;
+  for ii = 1:Lmax + 1; ampaux(ii) = norm(a0(ii,:)); end ; amps = ampaux;
+  for ii = 1:Lmax + 1; ampaux(ii) = norm(a1(ii,:)); end ; amps = [amps ampaux];
+  for ii = 1:Lmax + 1; ampaux(ii) = norm(a2(ii,:)); end ; amps = [amps ampaux];
+  for ii = 1:Lmax + 1; ampaux(ii) = norm(a3(ii,:)); end ; amps = [amps ampaux];
 
 % Name of files where data will be written
   L0name=num2str(L0+1e-12,'%5.2f');
@@ -86,15 +81,20 @@ function ppftstep_opt(Ain,Scal,Tvec,L0in,Rein)
    b3 = nonlin(a3,DX,DY,D2X,D2Y,W,PHI,EF2X,EX2F,Lmax,Lmax2);
 %  ***********************************************************
 
-   avec(itime+2) = norm(a3); 
-   l = 1 ; lM =  l + Lmax + 1 ; 
-   covec(itime+2) = a3(lM,2);
-   coveceven(itime+2) = a3(lM,1); 
-   covecodd(itime+2) = a3(lM,2); 
+   %tvec = [tvec t] ; avec = [avec norm(a3)] ; 
+   %l = 5 ; lM =  l + Lmax + 1 ; covec = [covec a3(lM,2)];
+   %l = 5 ; lM =  l + Lmax + 1 ; 
+   %coveceven = [coveceven a3(lM,1)];
+   %covecodd = [covecodd a3(lM,2)];
   
-   if mod(itime,savetime) == 0  || itime == iter
+   if mod(itime,100) == 0  | itime == iter
     for ii = 1:Lmax + 1; ampaux(ii) = norm(a3(ii,:)); end ; 
-      amps(:,itime/savetime+4) =  ampaux; 
+    amps =  [amps ampaux]; tvec2 = [tvec2 t] ;
+      tvec = [tvec t] ; avec = [avec norm(a3)] ; 
+      l = 5 ; lM =  l + Lmax + 1 ; covec = [covec a3(lM,2)];
+      l = 5 ; lM =  l + Lmax + 1 ; 
+      coveceven = [coveceven a3(lM,1)];
+      covecodd = [covecodd a3(lM,2)];
    end
    
    % Writing data
@@ -130,7 +130,7 @@ function ppftstep_opt(Ain,Scal,Tvec,L0in,Rein)
    for l=0:Lmax 
     lcount = lcount + 1 ; k = k0*l ; k2 = k^2; k4 = k^4 ;
     A = PHI'*W*(D2Y-k2*ID)*PHI; INVARK4(:,:,lcount) = inv(A); 
-    B = PHI'*W*((1/Re)*(D2Y-k2*ID)^2 + 1i*k*D2BF - 1i*k*BF*(D2Y-k2*ID))*PHI ;
+    B = PHI'*W*((1/Re)*(D2Y-k2*ID)^2 + i*k*D2BF - i*k*BF*(D2Y-k2*ID))*PHI ;
     INVABRK4(:,:,lcount) = inv(A)*B ; 
    end
    return
@@ -196,8 +196,8 @@ function ppftstep_opt(Ain,Scal,Tvec,L0in,Rein)
   G = 2*pi/k0 ; 
   Lmax = L ; Lmax2 = (3*Lmax+1)/2 ; NX = 3*Lmax+2 ; % Original
   x = ((0:NX-1)*G/NX)'; % Axial mesh
-  EX2F = (1/NX)*exp(-1i*(2*pi/G)*(-Lmax2:Lmax2).'*x.') ; % From X to F (X2F)
-  EF2X = exp(1i*(2*pi/G)*x*(-Lmax:Lmax)) ;               % From F to X (F2X)
+  EX2F = (1/NX)*exp(-i*(2*pi/G)*(-Lmax2:Lmax2).'*x.') ; % From X to F (X2F)
+  EF2X = exp(i*(2*pi/G)*x*(-Lmax:Lmax)) ;               % From F to X (F2X)
   hx = 2*pi/NX ; column = [0 .5*(-1).^(1:NX-1)./sin((1:NX-1)*hx/2)];
   DX = (2*pi/G)*toeplitz(column,column([1 NX:-1:2])); D2X = DX^2 ;  
 
@@ -226,7 +226,7 @@ function ppftstep_opt(Ain,Scal,Tvec,L0in,Rein)
    for l=-Lmax:Lmax % Complex conjugate not yet implemented (pending)
     lcount = lcount + 1 ; k = k0*l ; k2 = k^2; k4 = k^4 ;
     A = PHI'*W*(D2Y-k2*ID)*PHI; INVA(:,:,lcount) = inv(A); 
-    B = PHI'*W*((1/Re)*(D2Y-k2*ID)^2 + 1i*k*D2BF - 1i*k*BF*(D2Y-k2*ID))*PHI ;
+    B = PHI'*W*((1/Re)*(D2Y-k2*ID)^2 + i*k*D2BF - i*k*BF*(D2Y-k2*ID))*PHI ;
     LIN = inv(A)*B ; 
 %    [VV,DD] = eig(LIN); dd = diag(DD) ; [foo,ii]=sort(real(dd));
 %    dd = dd(ii) ; DD = DD(:,ii) ; VV = VV(:,ii) ;
@@ -257,7 +257,7 @@ function b = nonlin(a,DX,DY,D2X,D2Y,W,PHI,EF2X,EX2F,Lmax,Lmax2)
      T = diag(beta,1) + diag(beta,-1); [V,D] = eig(T);
      xxx = diag(D);                       %  <- Gauss nodes
      www = 2*V(1,:).^2;                   %  <- Gauss weights
-    [~,index2]=sort(xxx);
+    [junk2,index2]=sort(xxx);
      x=xxx(index2(:));
      w=www(index2(:));
     end
