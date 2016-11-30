@@ -1,4 +1,4 @@
-%codi per anar baixnt el reynolds poc a poc fins a trobar el mínim 
+%codi per anar baixnt el reynolds poc a poc fins a trobar el mÃ­nim 
 %reynolds on encara es veuen TSW
 
 
