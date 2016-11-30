@@ -11,3 +11,10 @@
 
 # Compiled MEX binaries (all platforms)
 *.mex*
+
+# Binary files were data is saved
+*.mat
+
+# Figures and images
+*.fig
+*.eps
