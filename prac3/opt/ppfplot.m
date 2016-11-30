@@ -46,7 +46,6 @@ set(gca,'fontsize',16)
 figure(4)
 dt = tvec(2)-tvec(1) ; t = tvec ; x = real(avec) ;
 L = length(t); N = 2^(nextpow2(L)-1); fs = 1/dt;
-length(avec)-N+1
 y1 = fft(avec(end-N+1:end),N);
 power1 = y1.*conj(y1)/N;
 f = 2*pi*(0:N-1)*(fs/N);     % Angular Frequency range
