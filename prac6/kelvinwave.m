@@ -14,7 +14,7 @@ g = 10;
 % Reference depth
 h0 = 50;
 %wave speed
-c0=sqrt(g/h0);
+c0=sqrt(g*h0);
 % Deformation radius
 R = c0/f; % ??? -> WRITE THE FORMULA FOR THE ROSSBY RADIUS OF DEFORMATION
 % Maximum free surface for initial condition
@@ -38,7 +38,7 @@ dyp = 3;
 
 % NUMERICAL TEMPORAL PARAMETERS
 % Final time
-TF = 1*Lx/sqrt(g*h0);
+TF = 2*pi*Lx/sqrt(g*h0);
 % Time step as a function of Courant parameter
 dt = min(dx,dy)/c0/2; % ??? -> WRITE IT AS A FUNCTION OF THE CFL CONDITION, USING min(dx,dy) TO REPRESENT THE SPATIAL GRID SIZE
 % Number of time steps as a function of time step and final time
@@ -102,7 +102,7 @@ yp(1,:) = y(1,2:dyp:N-1);
 t = 0;
 
 % Initial condition: a sinusoidal Kelvin wave
-kx = 2*pi/(Lx/4); % ??? -> WRITE THE WAVELENGTH
+kx = 2*pi/(Lx); % ??? -> WRITE THE WAVELENGTH
 for i=1:M
     for j=1:N
         F1 = sin(kx*x(i)); % ??? -> WRITE THE F1 FUNCTION
@@ -173,6 +173,9 @@ tic %To know the elapsed time for the resolution and plot
 % v(i,j) is in fact at node i,j-1/2
 
 % Make Nsteps time steps
+zetavec3=[];
+indexsum=0;
+index=0;
 for nn=1:Nsteps
     
     % EQUATION 1: MASS CONSERVATION -> provides zeta
@@ -201,7 +204,18 @@ for nn=1:Nsteps
         
     % Update zeta
     zeta = zetan;
-
+    
+    indexin=index;
+    [etamax,index]=max(zeta(:,3));
+    index1=index-indexin;
+    if abs(index1)>1
+        index1=1;
+    end
+    if index1<0
+        index1=1;
+    end
+    indexsum=indexsum+index1;
+    zetavec3=[zetavec3 max(zeta(:,3))];
     
     % EQUATION 2: NAVIER STOKES -> provides u and v
     
@@ -219,7 +233,7 @@ for nn=1:Nsteps
                 for j=1:N-1
                     dxz=-g*(zeta(i,j)-zeta(i-1,j))/dx;
                     vi12j=f/4*(v(i,j)+v(i,j+1)+v(i-1,j+1)+v(i-1,j));
-                    un(i,j) = un(i,j)+dt*(dxz+vi12j); % ??? -> FILL IT IN FROM THE x-MOMETUM EQUATION
+                    un(i,j) = u(i,j)+dt*(dxz+vi12j); % ??? -> FILL IT IN FROM THE x-MOMETUM EQUATION
                     % Applying a mask on sea-land interfaces: it makes un=0 if there  
                     % is a land point on the right or on the left of this u node
                     un(i,j)=un(i,j)*issea(i,j)*issea(i-1,j);
@@ -240,8 +254,8 @@ for nn=1:Nsteps
             for i=2:M-1
                 for j=2:N
                     dyz=-g*(zeta(i,j)-zeta(i,j-1))/dy;
-                    uij12=-f/4*(u(i,j)+u(i+1,j)+v(i,j-1)+v(i+1,j-1));
-                    vn(i,j) = vn(i,j)+dt*(dyz+uij12); % ??? -> FILL IT IN FROM THE y-MOMETUM EQUATION
+                    uij12=-f/4*(u(i,j)+u(i+1,j)+u(i,j-1)+u(i+1,j-1));
+                    vn(i,j) = v(i,j)+dt*(dyz+uij12); % ??? -> FILL IT IN FROM THE y-MOMETUM EQUATION
                     % Applying a mask on sea-land interfaces: it makes vn=0 if there  
                     % is a land point on the top or on the bottom of this v node
                     vn(i,j)=vn(i,j)*issea(i,j)*issea(i,j-1);
@@ -306,3 +320,11 @@ for nn=1:Nsteps
 end
 
 toc %To know the elapsed time for the resolution and plot 
+tvec=linspace(0,TF,TF/dt);
+figure(2)
+plot(tvec,zetavec3)
+xlabel('Time')
+ylabel(' max(eta) ; j=3')
+grid on
+cmean=indexsum*dx/TF
+relerr=100*abs(cmean-c0)/c0
