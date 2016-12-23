@@ -1,15 +1,15 @@
-% No slip boundary conditions
+% Given Ra_critic=1708 & K_critic=3.12 obtained in prac5a
+% Let's plot the vertical velocity (its vertical profile) & Temperature
+
 close all 
 clear all
 % We supose sigma=0 and ky=0 as we have rolls (v=0)
-d=5e-3; % m
-K=1.4e-7; % diffusion constat
-Gamma=10000.0; % temperature gradient
-k=3.12; % wavenumber
-Ra=1708; % Rayleigh number
-X=linspace(0,5,100);
-Z=linspace(0,4*pi/k,100);
-[x,z]=meshgrid(X,Z);
+d=5e-3; %m
+K=1.4e-7; %diffusion constat
+Gamma=10000.0; %temperature gradient
+k=3.12; %critic wavenumber
+Ra=1708; %Critic Rayleigh number
+z=linspace(0,4*pi/k,100);
 C=K/(Gamma*d^2);
 lam=(Ra/k^4)^(1/3);
 q0=k*(lam-1)^.5;
@@ -23,7 +23,7 @@ Q=Q([1 3 5]);
 % As the system is over ranked we will impose A=1. To obtain B and C then
 % we proceed in this way:
 
-W=zeros(length(X)); DW=zeros(length(X));DDW=zeros(length(X));
+W=zeros(1,length(z)); DW=zeros(1,length(z));DDW=zeros(1,length(z));
 ii=1;
 for zz=0:4*pi/(99*k):4*pi/k
 M=[cosh(Q*zz); Q.*sinh(Q*zz); Q.^4.*cosh(Q*zz)-2*k^2*Q.^2.*cosh(Q*zz)+k^4*cosh(Q*zz)];
@@ -32,29 +32,26 @@ b=[-M(1,1) -M(2,1) -M(3,1)]';
 coef=Mcoef\b;
 coef=[1; coef];
 Wvec=cosh(Q(1)*zz)+coef(2)*cosh(Q(2)*zz)+coef(3)*cosh(Q(3)*zz);
-W(ii,:)=ones(1,length(X))* Wvec;
+W(1,ii)= Wvec;
 DWvec=Q(1)*sinh(Q(1)*zz)+ coef(2)*Q(2)*sinh(Q(2)*zz)+coef(3)*Q(3)*sinh(Q(3)*zz);
-DW(ii,:)=ones(1,length(X))* DWvec;
+DW(1,ii)= DWvec;
 DDWvec=(Q(1)^4.*cosh(Q(1)*zz)-2*k^2*Q(1)^2.*cosh(Q(1)*zz)+k^4*cosh(Q(1)*zz))+coef(2)*(Q(2)^4.*cosh(Q(2)*zz)-2*k^2*Q(2)^2.*cosh(Q(2)*zz)+k^4*cosh(Q(2)*zz))...
     +coef(3)*(Q(3)^4.*cosh(Q(3)*zz)-2*k^2*Q(3)^2.*cosh(Q(3)*zz)+k^4*cosh(Q(3)*zz));
-DDW(ii,:)=ones(1,length(X))* DDWvec;
+DDW(1,ii)= DDWvec;
 ii=ii+1;
 end
 
 
-wpert=C*real(W.*(cos(k*x)+1i*sin(k*x)));
-
-tpert=(1/(Ra*k^2))*real(DDW.*(cos(k*x)+1i*sin(k*x)));
-
-upert=(C/k)*real(DW.*(1i*cos(k*x)-sin(k*x)));
-
+wpertvertaxis=C*real(W);
+tpert=(1/(Ra*k^2))*real(DDW);
+norm=max(tpert);
+wpertaxisnorm=wpertvertaxis/norm;
+tpertnorm=tpert/norm;
 figure(1)
-contour3(x,z,wpert,100)
+plot(z,wpertaxisnorm,'linewidth',2)
 title('w perturbation')
+grid on
 figure(2)
-contour3(x,z,tpert,100)
+plot(z,tpertnorm,'linewidth',2)
 title('T perturbation')
-figure(3)
-contour3(x,z,upert,100)
-title('u perturbation')
-quiver(x,z,upert,wpert)
+grid on

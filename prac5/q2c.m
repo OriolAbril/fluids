@@ -1,4 +1,4 @@
-% No slip boundary conditions
+%% No slip boundary conditions
 close all 
 clear all
 % We supose sigma=0 and ky=0 as we have rolls (v=0)
@@ -50,11 +50,47 @@ upert=(C/k)*real(DW.*(1i*cos(k*x)-sin(k*x)));
 
 figure(1)
 contour3(x,z,wpert,100)
-title('w perturbation')
+title('w perturbation no-slip bc')
 figure(2)
 contour3(x,z,tpert,100)
-title('T perturbation')
+title('T perturbation no-slip bc')
 figure(3)
 contour3(x,z,upert,100)
-title('u perturbation')
+title('u perturbation no-slip bc')
+quiver(x,z,upert,wpert)
+
+%% stress-free boundary conditions
+W=zeros(length(X)); D2W=zeros(length(X));DDW=zeros(length(X));
+ii=1;
+for zz=0:4*pi/(99*k):4*pi/k
+M=[cosh(Q*zz); (Q.^2).*cosh(Q*zz); Q.^4.*cosh(Q*zz)-2*k^2*Q.^2.*cosh(Q*zz)+k^4*cosh(Q*zz)];
+Mcoef=M(1:3,2:3);
+b=[-M(1,1) -M(2,1) -M(3,1)]';
+coef=Mcoef\b;
+coef=[1; coef];
+Wvec=cosh(Q(1)*zz)+coef(2)*cosh(Q(2)*zz)+coef(3)*cosh(Q(3)*zz);
+W(ii,:)=ones(1,length(X))* Wvec;
+D2Wvec=(Q(1)^2)*cosh(Q(1)*zz)+ coef(2)*(Q(2)^2)*cosh(Q(2)*zz)+coef(3)*(Q(3)^2)*cosh(Q(3)*zz);
+D2W(ii,:)=ones(1,length(X))* D2Wvec;
+DDWvec=(Q(1)^4.*cosh(Q(1)*zz)-2*k^2*Q(1)^2.*cosh(Q(1)*zz)+k^4*cosh(Q(1)*zz))+coef(2)*(Q(2)^4.*cosh(Q(2)*zz)-2*k^2*Q(2)^2.*cosh(Q(2)*zz)+k^4*cosh(Q(2)*zz))...
+    +coef(3)*(Q(3)^4.*cosh(Q(3)*zz)-2*k^2*Q(3)^2.*cosh(Q(3)*zz)+k^4*cosh(Q(3)*zz));
+DDW(ii,:)=ones(1,length(X))* DDWvec;
+ii=ii+1;
+end
+
+wpert=C*real(W.*(cos(k*x)+1i*sin(k*x)));
+
+tpert=(1/(Ra*k^2))*real(DDW.*(cos(k*x)+1i*sin(k*x)));
+
+upert=(C/k)*real(D2W.*(1i*cos(k*x)-sin(k*x)));
+
+figure(4)
+contour3(x,z,wpert,100)
+title('w perturbation stress-free bc')
+figure(5)
+contour3(x,z,tpert,100)
+title('T perturbation stress-free bc')
+figure(6)
+contour3(x,z,upert,100)
+title('u perturbation stress-free bc')
 quiver(x,z,upert,wpert)
