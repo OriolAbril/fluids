@@ -5,8 +5,8 @@ MM = 24;
 global eta x W DX PHI PSI %Re1_in
 eta=0.5;
 [x,w,W,DX,DX2,PHI,DPHI,D2PHI,PSI,DPSI,D2PSI] = setupspec2ord(MM);
-k = 3.16 ; Re1 = 68.19 ; Re2 = 0;
-Re2vec=linspace(-200,200,100);
+k = 3.16 ; Re1 = 68.19 ;
+Re2vec=linspace(-200,200,200);
 Re1vec=Re2vec*0;
 j=1;
 kvec=0.7:0.1:5;
@@ -26,3 +26,4 @@ xlabel('Re_2')
 ylabel('Re_1')
 hold on
 plot(Re2mesh,Re1mesh,'r--')
+grid on
