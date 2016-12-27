@@ -1,6 +1,5 @@
-function detM = funQ3a_ns(Ra)
+function detM = funQ3a_ns(Ra,k)
 %no slip boundary condition
-global k
 lam=(Ra/k^4)^(1/3);
 q0=k*(lam-1)^.5;
 q=k*(1+lam/2*(1+1i*sqrt(3)))^.5;
