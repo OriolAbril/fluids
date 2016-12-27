@@ -27,7 +27,7 @@ Q=Q([1 3 5]);
 
 W=zeros(length(X)); DW=zeros(length(X));DDW=zeros(length(X));
 ii=1;
-for zz=0:4*pi/(99*k):4*pi/k
+for zz=0:4*pi/((length(Z)-1)*k):4*pi/k
 M=[sinh(Q*zz); Q.*cosh(Q*zz); Q.^4.*sinh(Q*zz)-2*k^2*Q.^2.*sinh(Q*zz)+k^4*sinh(Q*zz)];
 Mcoef=M(1:3,2:3);
 b=[-M(1,1) -M(2,1) -M(3,1)]';
@@ -86,7 +86,7 @@ quiver(x,z,upert,wpert)
 %% stress-free boundary conditions
 W=zeros(length(X)); D2W=zeros(length(X));DDW=zeros(length(X));
 ii=1;
-for zz=0:4*pi/(99*k):4*pi/k
+for zz=0:4*pi/(length(Z)-1)*k):4*pi/k
 M=[sinh(Q*zz); (Q.^2).*sinh(Q*zz); Q.^4.*sinh(Q*zz)-2*k^2*Q.^2.*sinh(Q*zz)+k^4*sinh(Q*zz)];
 Mcoef=M(1:3,2:3);
 b=[-M(1,1) -M(2,1) -M(3,1)]';

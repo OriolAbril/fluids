@@ -110,11 +110,33 @@ upert=(C/k)*real(D2W.*(1i*cos(k*x)-sin(k*x)));
 
 figure(5)
 contour3(x,z,wpert,100)
-title('w perturbation stress-free bc')
+title('w perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+zlabel('w')
 figure(6)
 contour3(x,z,tpert,100)
-title('T perturbation stress-free bc')
+title('T perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+zlabel('T')
 figure(7)
-contour3(x,z,upert,100)
-title('u perturbation stress-free bc')
+contour(x,z,upert,70)
+title('u perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+hold on
+quiver(x,z,upert,wpert)
+figure(8)
+contour(x,z,upert,70)
+title('u perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+hold on
+for i = 1:numel(x)
+    mody=sqrt(upert(i)^2+wpert(i)^2); 
+    %normalitzem les fletxes de manera que totes tinguin modul 1
+    upert(i) = upert(i)/mody;
+    wpert(i) = wpert(i)/mody;
+end
 quiver(x,z,upert,wpert)
