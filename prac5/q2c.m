@@ -1,6 +1,8 @@
 %% No slip boundary conditions
 close all 
 clear all
+set(0, 'DefaultAxesFontSize', 13)
+
 % We supose sigma=0 and ky=0 as we have rolls (v=0)
 d=5e-3; % m
 K=1.4e-7; % diffusion constat
@@ -51,12 +53,34 @@ upert=(C/k)*real(DW.*(1i*cos(k*x)-sin(k*x)));
 figure(1)
 contour3(x,z,wpert,100)
 title('w perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+zlabel('w')
 figure(2)
 contour3(x,z,tpert,100)
 title('T perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+zlabel('T')
 figure(3)
-contour3(x,z,upert,100)
+contour(x,z,upert,70)
 title('u perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+hold on
+quiver(x,z,upert,wpert)
+figure(4)
+contour(x,z,upert,70)
+title('u perturbation no-slip bc')
+xlabel('x')
+ylabel('z')
+hold on
+for i = 1:numel(x)
+    mody=sqrt(upert(i)^2+wpert(i)^2); 
+    %normalitzem les fletxes de manera que totes tinguin modul 1
+    upert(i) = upert(i)/mody;
+    wpert(i) = wpert(i)/mody;
+end
 quiver(x,z,upert,wpert)
 
 %% stress-free boundary conditions
@@ -84,13 +108,13 @@ tpert=(1/(Ra*k^2))*real(DDW.*(cos(k*x)+1i*sin(k*x)));
 
 upert=(C/k)*real(D2W.*(1i*cos(k*x)-sin(k*x)));
 
-figure(4)
+figure(5)
 contour3(x,z,wpert,100)
 title('w perturbation stress-free bc')
-figure(5)
+figure(6)
 contour3(x,z,tpert,100)
 title('T perturbation stress-free bc')
-figure(6)
+figure(7)
 contour3(x,z,upert,100)
 title('u perturbation stress-free bc')
 quiver(x,z,upert,wpert)
