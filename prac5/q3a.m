@@ -47,5 +47,13 @@ legend('No-slip','Stress-free')
 title('Critical Ra number')
 xlabel('k')
 ylabel('Ra')
+hold on
+scatter(kcritns,Racritns)
+hold on
+scatter(kcritsf,Racritsf)
 axis([0 10 0 40000])
 grid on
+kcritns
+kcritsf
+Racritns
+Racritsf

@@ -84,7 +84,7 @@ end
 quiver(x,z,upert,wpert)
 
 %% stress-free boundary conditions
-W=zeros(length(X)); D2W=zeros(length(X));DDW=zeros(length(X));
+W=zeros(length(X)); D2W=zeros(length(X));DDW=zeros(length(X)); DW=zeros(length(X));
 ii=1;
 for zz=0:4*pi/(99*k):4*pi/k
 M=[cosh(Q*zz); (Q.^2).*cosh(Q*zz); Q.^4.*cosh(Q*zz)-2*k^2*Q.^2.*cosh(Q*zz)+k^4*cosh(Q*zz)];
@@ -94,6 +94,8 @@ coef=Mcoef\b;
 coef=[1; coef];
 Wvec=cosh(Q(1)*zz)+coef(2)*cosh(Q(2)*zz)+coef(3)*cosh(Q(3)*zz);
 W(ii,:)=ones(1,length(X))* Wvec;
+DWvec=Q(1)*sinh(Q(1)*zz)+ coef(2)*Q(2)*sinh(Q(2)*zz)+coef(3)*Q(3)*sinh(Q(3)*zz);
+DW(ii,:)=ones(1,length(X))* DWvec;
 D2Wvec=(Q(1)^2)*cosh(Q(1)*zz)+ coef(2)*(Q(2)^2)*cosh(Q(2)*zz)+coef(3)*(Q(3)^2)*cosh(Q(3)*zz);
 D2W(ii,:)=ones(1,length(X))* D2Wvec;
 DDWvec=(Q(1)^4.*cosh(Q(1)*zz)-2*k^2*Q(1)^2.*cosh(Q(1)*zz)+k^4*cosh(Q(1)*zz))+coef(2)*(Q(2)^4.*cosh(Q(2)*zz)-2*k^2*Q(2)^2.*cosh(Q(2)*zz)+k^4*cosh(Q(2)*zz))...
@@ -106,30 +108,30 @@ wpert=C*real(W.*(cos(k*x)+1i*sin(k*x)));
 
 tpert=(1/(Ra*k^2))*real(DDW.*(cos(k*x)+1i*sin(k*x)));
 
-upert=(C/k)*real(D2W.*(1i*cos(k*x)-sin(k*x)));
+upert=(C/k)*real(DW.*(1i*cos(k*x)-sin(k*x)));
 
 figure(5)
 contour3(x,z,wpert,100)
-title('w perturbation no-slip bc')
+title('w perturbation sf bc')
 xlabel('x')
 ylabel('z')
 zlabel('w')
 figure(6)
 contour3(x,z,tpert,100)
-title('T perturbation no-slip bc')
+title('T perturbation sf bc')
 xlabel('x')
 ylabel('z')
 zlabel('T')
 figure(7)
 contour(x,z,upert,70)
-title('u perturbation no-slip bc')
+title('u perturbation sf bc')
 xlabel('x')
 ylabel('z')
 hold on
 quiver(x,z,upert,wpert)
 figure(8)
 contour(x,z,upert,70)
-title('u perturbation no-slip bc')
+title('u perturbation sf bc')
 xlabel('x')
 ylabel('z')
 hold on

@@ -12,7 +12,7 @@ K=1.4e-7; %diffusion constat
 Gamma=10000.0; %temperature gradient
 k=fminbnd(@minQ3a_ns,1,10); %critic wavenumber
 Ra=minQ3a_ns(k); %Critic Rayleigh number
-z=linspace(0,4*pi/k,250);
+z=linspace(-2*pi/k,2*pi/k,250);
 C=K/(Gamma*d^2);
 lam=(Ra/k^4)^(1/3);
 q0=k*(lam-1)^.5;
@@ -28,7 +28,7 @@ Q=Q([1 3 5]);
 
 W=zeros(1,length(z)); DW=zeros(1,length(z));DDW=zeros(1,length(z));
 ii=1;
-for zz=0:4*pi/((length(z)-1)*k):4*pi/k
+for zz=z
 M=[sinh(Q*zz); Q.*cosh(Q*zz); Q.^4.*sinh(Q*zz)-2*k^2*Q.^2.*sinh(Q*zz)+k^4*sinh(Q*zz)];
 Mcoef=M(1:3,2:3);
 b=[-M(1,1) -M(2,1) -M(3,1)]';
