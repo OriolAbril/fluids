@@ -110,13 +110,15 @@ t = 0;
 kx = 2*pi/(Lx); % ??? -> WRITE THE WAVELENGTH
 for i=1:M
     for j=1:N
-        F1 = sin(kx*x(i)); % ??? -> WRITE THE F1 FUNCTION
+        %F1 = sin(kx*x(i)); % ??? -> WRITE THE F1 FUNCTION
+        F1 = exp(-(x(i)-(Lx/8))^2/(2*(Lx/15)^2));
         zeta(i,j) = ampli*exp(-y(j)/R)*F1; % ??? -> WRITE THE eta OF A KELVIN WAVE
     end
 end
 for i=1:M
     for j=1:N
-        F1 = sin(kx*x(i)); % ??? -> WRITE THE F1 FUNCTION
+        %F1 = sin(kx*x(i)); % ??? -> WRITE THE F1 FUNCTION
+        F1 = exp(-(x(i)-(Lx/8))^2/(2*(Lx/15)^2));
         u(i,j) =ampli*c0/h0*exp(-y(j)/R)*F1; % ??? -> WRITE THE u OF A KELVIN WAVE
     end
 end

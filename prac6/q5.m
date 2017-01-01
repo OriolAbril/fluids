@@ -1,9 +1,5 @@
-% If we keep constant t_max and dt:
-% then if dt=C/1.5 then C=min(dx,dy)/c0
-% min(dx,dy)/c0
 clear all;
 close all;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% MODEL PARAMETERS
@@ -15,7 +11,9 @@ f = 10^(-4);
 % Gravity
 g = 10;
 % Reference depth
-h0 = 500;
+h0 = 50;
+% Relative amplitude of the bottom perturbation
+At=0.15; % At=[0.1,0.15]
 %wave speed
 c0=sqrt(g*h0);
 % Deformation radius
@@ -26,8 +24,8 @@ ampli = 0.001*h0;
 
 % NUMERICAL SPATIAL PARAMETERS
 % Grid size
-M = 30;
-N = 25;
+M = 60;
+N = 50;
 % Domain size
 Lx = 12*R;
 Ly = 10*R;
@@ -41,14 +39,9 @@ dyp = 3;
 
 % NUMERICAL TEMPORAL PARAMETERS
 % Final time
-TF =2*Lx/c0;
+TF = 2*pi*Lx/c0;
 % Time step as a function of Courant parameter
-C=min(dx,dy)/c0;
-% S'ha de trobar el dt maxim possible perque hi hagi estabilitat
-% Es pregunta pel C maxim;
-%C=0.3; 
-r=0.000;
-dt = 0.27*C % ??? -> WRITE IT AS A FUNCTION OF THE CFL CONDITION, USING min(dx,dy) TO REPRESENT THE SPATIAL GRID SIZE
+dt = min(dx,dy)/c0/2; % ??? -> WRITE IT AS A FUNCTION OF THE CFL CONDITION, USING min(dx,dy) TO REPRESENT THE SPATIAL GRID SIZE
 % Number of time steps as a function of time step and final time
 Nsteps = floor(TF/dt);
 % Time step for ploting 
@@ -110,35 +103,24 @@ yp(1,:) = y(1,2:dyp:N-1);
 t = 0;
 
 % Initial condition: a sinusoidal Kelvin wave
-kx = 2*pi/(Lx); % ??? -> WRITE THE WAVELENGTH
+kx = 2*pi/(Lx); % wavelength
 for i=1:M
     for j=1:N
-        F1 = sin(kx*x(i)); % ??? -> WRITE THE F1 FUNCTION
-        zeta(i,j) = ampli*exp(-y(j)/R)*F1; % ??? -> WRITE THE eta OF A KELVIN WAVE
+        F1 = exp(-(x(i)-(Lx/8))^2/(2*(Lx/15)^2)); % Gaussian perturbation Simulates a storm surge
+        zeta(i,j) = ampli*exp(-y(j)/R)*F1; 
     end
 end
-% A continuacio creem el vector de maxim de la eta teorica amb j=3
-etate=[];
-etateo=[];
-format long
-% for t=0:TF/(Nsteps-1):TF
-%     for i=1:M
-%         F1=sin(kx*(x(i)-c0*t));
-%         etat=ampli*exp(-y(3)/R)*F1;
-%         etate=[etate etat];
-%     end
-%     etateo=[etateo max(etate)];
-% end
 for i=1:M
     for j=1:N
-        F1 = sin(kx*x(i)); % ??? -> WRITE THE F1 FUNCTION
-        u(i,j) =ampli*c0/h0*exp(-y(j)/R)*F1; % ??? -> WRITE THE u OF A KELVIN WAVE
+        F1 = exp(-(x(i)-(Lx/8))^2/(2*(Lx/15)^2)); % Gaussian perturbation Simulates a storm surge
+        u(i,j) =ampli*c0/h0*exp(-y(j)/R)*F1; %
     end
 end
 
 % Bathymetry of the sea
-h(:,:) = h0;
-
+for k= 1:N
+    h(:,k) = h0*(1+At*(1+tanh((x-0.2*Lx)./(0.05*Lx))).*(-1+tanh((x-0.6*Lx)./(0.05*Lx))));
+end
 % Definition of the land regions with the land-sea mask: here land points in j=1 and j=N 
 issea(:,1) = 0;
 issea(:,N) = 0;
@@ -194,17 +176,18 @@ tic %To know the elapsed time for the resolution and plot
 
 % Make Nsteps time steps
 zetavec3=[];
-indexsum=0;
+ibump=0;
+isurf=0;
 index=0;
+indexsum = 0;
+i1=0;
+i2 = 0;
+
+tbump = 0;
+tsurf = 0;
+
 for nn=1:Nsteps
     
-    for i=1:M
-        format long
-        F1=sin(kx*(x(i)-c0*dt*(nn-1)));
-        etat=ampli*exp(-y(3)/R)*F1;
-        etate=[etate etat];
-    end
-    etateo=[etateo max(etate)];
     % EQUATION 1: MASS CONSERVATION -> provides zeta
     
     % New free surface elevation
@@ -225,15 +208,29 @@ for nn=1:Nsteps
     % Boundary condition at i=M (real node)
     zetan(M,:) = zetan(2,:);
     % Boundary condition at j=1 (ghost node)
-    zetan(:,1) = zeta(:,1); % ??? -> WRITE THE zeta BC AT GHOST zeta NODE j=1
+    zetan(:,1) = 0; % ??? -> WRITE THE zeta BC AT GHOST zeta NODE j=1
     % Boundary condition at j=N (real node)
-    zetan(:,N) = zeta(:,N); % ??? -> WRITE THE zeta BC AT REAL zeta NODE j=N
+    zetan(:,N) = 0; % ??? -> WRITE THE zeta BC AT REAL zeta NODE j=N
         
     % Update zeta
     zeta = zetan;
     
+    
+    inx = index;
     indexin=index;
-    [etamax,index]=max(zeta(:,3));
+    [etamax,index]=max(zeta(:,3)); 
+    if index>19 && index<31 
+        tbump = tbump + dt;
+        i1 = index-inx;
+        ibump = ibump + i1;
+    end
+    if index>39 && index<61 
+        tsurf = tsurf + dt;
+        i2 = index-inx;
+        isurf = isurf + i2;
+    end   
+        
+    
     index1=index-indexin;
     if abs(index1)>1
         index1=1;
@@ -260,8 +257,7 @@ for nn=1:Nsteps
                 for j=1:N-1
                     dxz=-g*(zeta(i,j)-zeta(i-1,j))/dx;
                     vi12j=f/4*(v(i,j)+v(i,j+1)+v(i-1,j+1)+v(i-1,j));
-                    fricu=-(r/h0)*u(i,j);
-                    un(i,j) = u(i,j)+dt*(dxz+vi12j+fricu); % ??? -> FILL IT IN FROM THE x-MOMETUM EQUATION
+                    un(i,j) = u(i,j)+dt*(dxz+vi12j); % ??? -> FILL IT IN FROM THE x-MOMETUM EQUATION
                     % Applying a mask on sea-land interfaces: it makes un=0 if there  
                     % is a land point on the right or on the left of this u node
                     un(i,j)=un(i,j)*issea(i,j)*issea(i-1,j);
@@ -272,7 +268,7 @@ for nn=1:Nsteps
             % Boundary condition at i=M (real node)
             un(M,:) = un(2,:); % ??? -> WRITE THE u BC AT REAL u NODE i=M
             % Boundary condition at j=N (real node)
-            un(:,N) = u(:,N); % ??? -> WRITE THE u BC AT REAL u NODE j=N
+            un(:,N) = 0; % ??? -> WRITE THE u BC AT REAL u NODE j=N
             
             % Update u
             u = un;
@@ -283,8 +279,7 @@ for nn=1:Nsteps
                 for j=2:N
                     dyz=-g*(zeta(i,j)-zeta(i,j-1))/dy;
                     uij12=-f/4*(u(i,j)+u(i+1,j)+u(i,j-1)+u(i+1,j-1));
-                    fricv=-(r/h0)*v(i,j);
-                    vn(i,j) = v(i,j)+dt*(dyz+uij12+fricv); % ??? -> FILL IT IN FROM THE y-MOMETUM EQUATION
+                    vn(i,j) = v(i,j)+dt*(dyz+uij12); % ??? -> FILL IT IN FROM THE y-MOMETUM EQUATION
                     % Applying a mask on sea-land interfaces: it makes vn=0 if there  
                     % is a land point on the top or on the bottom of this v node
                     vn(i,j)=vn(i,j)*issea(i,j)*issea(i,j-1);
@@ -352,10 +347,15 @@ toc %To know the elapsed time for the resolution and plot
 tvec=linspace(0,TF,TF/dt);
 figure(2)
 plot(tvec,zetavec3)
-hold on
-plot(tvec,etateo)
 xlabel('Time')
-title(' max(eta) ; j=3')
+ylabel(' max(eta) ; j=3')
 grid on
 cmean=indexsum*dx/TF
 relerr=100*abs(cmean-c0)/c0
+figure(3)
+plot(h(:,1),'linewidth',3)
+grid on
+title('Squared bump')
+c1 = dx*ibump/tbump   % mean celerity in the bump
+c2 = dx*isurf/tsurf   % mean celerity after the bump
+
