@@ -2,15 +2,19 @@
 close all 
 clear all
 set(0, 'DefaultAxesFontSize', 13)
+global Raoldns
+Raoldns=30000;
 
 % We supose sigma=0 and ky=0 as we have rolls (v=0)
-d=5e-3; % m
-K=1.4e-7; % diffusion constat
-Gamma=10000.0; % temperature gradient
-k=3.12; % wavenumber
-Ra=1708; % Rayleigh number
-X=linspace(0,2,100);
-Z=linspace(0,2*pi/k,100);
+d=5e-3; % m 
+K=1.42e-7; % diffusion constat 
+alpha=2.1e-4; 
+nu=1e-6;
+k=fminbnd(@minQ3a_ns,1,10); %critic wavenumber
+Ra=minQ3a_ns(k); %Critic Rayleigh number
+Gamma=Ra*K*nu/(alpha*d^4); % temperature gradient
+X=linspace(-1,1,100);
+Z=linspace(-2*pi/k,2*pi/k,100);
 [x,z]=meshgrid(X,Z);
 C=K/(Gamma*d^2);
 lam=(Ra/k^4)^(1/3);
@@ -27,7 +31,7 @@ Q=Q([1 3 5]);
 
 W=zeros(length(X)); DW=zeros(length(X));DDW=zeros(length(X));
 ii=1;
-for zz=0:4*pi/((length(Z)-1)*k):4*pi/k
+for zz=Z
 M=[sinh(Q*zz); Q.*cosh(Q*zz); Q.^4.*sinh(Q*zz)-2*k^2*Q.^2.*sinh(Q*zz)+k^4*sinh(Q*zz)];
 Mcoef=M(1:3,2:3);
 b=[-M(1,1) -M(2,1) -M(3,1)]';
@@ -43,13 +47,25 @@ DDW(ii,:)=ones(1,length(X))* DDWvec;
 ii=ii+1;
 end
 
-
 wpert=C*real(W.*(cos(k*x)+1i*sin(k*x)));
-
 tpert=(1/(Ra*k^2))*real(DDW.*(cos(k*x)+1i*sin(k*x)));
-
 upert=(C/k)*real(DW.*(1i*cos(k*x)-sin(k*x)));
-
+JJ=6;
+norm=max(tpert(:,JJ));
+wpertaxisnorm=wpert(:,JJ)/norm;
+tpertnorm=tpert(:,JJ)/norm;
+figure(11)
+plot(z,wpertaxisnorm,'linewidth',2)
+title('w perturbation')
+xlabel('z')
+ylabel('w')
+grid on
+figure(12)
+plot(z,tpertnorm,'linewidth',2)
+title('T perturbation')
+xlabel('z')
+ylabel('T')
+grid on
 figure(1)
 contour3(x,z,wpert,100)
 title('w perturbation no-slip bc')
@@ -84,9 +100,9 @@ end
 quiver(x,z,upert,wpert)
 
 %% stress-free boundary conditions
-W=zeros(length(X)); D2W=zeros(length(X));DDW=zeros(length(X));
+W=zeros(length(X)); D2W=zeros(length(X));DDW=zeros(length(X)); DW=zeros(length(X));
 ii=1;
-for zz=0:4*pi/(length(Z)-1)*k):4*pi/k
+for zz=Z
 M=[sinh(Q*zz); (Q.^2).*sinh(Q*zz); Q.^4.*sinh(Q*zz)-2*k^2*Q.^2.*sinh(Q*zz)+k^4*sinh(Q*zz)];
 Mcoef=M(1:3,2:3);
 b=[-M(1,1) -M(2,1) -M(3,1)]';
@@ -96,6 +112,8 @@ Wvec=sinh(Q(1)*zz)+coef(2)*sinh(Q(2)*zz)+coef(3)*sinh(Q(3)*zz);
 W(ii,:)=ones(1,length(X))* Wvec;
 D2Wvec=Q(1)*sinh(Q(1)*zz)+ coef(2)*Q(2)*sinh(Q(2)*zz)+coef(3)*Q(3)*sinh(Q(3)*zz);
 D2W(ii,:)=ones(1,length(X))* D2Wvec;
+DWvec=Q(1)*cosh(Q(1)*zz)+ coef(2)*Q(2)*cosh(Q(2)*zz)+coef(3)*Q(3)*cosh(Q(3)*zz);
+DW(ii,:)=ones(1,length(X))* DWvec;
 DDWvec=(Q(1)^4.*sinh(Q(1)*zz)-2*k^2*Q(1)^2.*sinh(Q(1)*zz)+k^4*sinh(Q(1)*zz))+coef(2)*(Q(2)^4.*sinh(Q(2)*zz)-2*k^2*Q(2)^2.*sinh(Q(2)*zz)+k^4*sinh(Q(2)*zz))...
     +coef(3)*(Q(3)^4.*sinh(Q(3)*zz)-2*k^2*Q(3)^2.*sinh(Q(3)*zz)+k^4*sinh(Q(3)*zz));
 DDW(ii,:)=ones(1,length(X))* DDWvec;
@@ -106,7 +124,7 @@ wpert=C*real(W.*(cos(k*x)+1i*sin(k*x)));
 
 tpert=(1/(Ra*k^2))*real(DDW.*(cos(k*x)+1i*sin(k*x)));
 
-upert=(C/k)*real(D2W.*(1i*cos(k*x)-sin(k*x)));
+upert=(C/k)*real(DW.*(1i*cos(k*x)-sin(k*x)));
 
 figure(5)
 contour3(x,z,wpert,100)
