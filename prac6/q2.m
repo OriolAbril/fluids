@@ -41,18 +41,20 @@ dyp = 3;
 
 % NUMERICAL TEMPORAL PARAMETERS
 % Final time
-TF =10* Lx/c0;
+TF =Lx/c0;
+TF=10*TF;
 % Time step as a function of Courant parameter
 C=min(dx,dy)/c0;
 % S'ha de trobar el dt maxim possible perque hi hagi estabilitat
 % Es pregunta pel C maxim;
 %C=0.3; 
 r=0.000;
-dt = C/2; % ??? -> WRITE IT AS A FUNCTION OF THE CFL CONDITION, USING min(dx,dy) TO REPRESENT THE SPATIAL GRID SIZE
+dt = C/20; % ??? -> WRITE IT AS A FUNCTION OF THE CFL CONDITION, USING min(dx,dy) TO REPRESENT THE SPATIAL GRID SIZE
 % Number of time steps as a function of time step and final time
 Nsteps = floor(TF/dt);
 % Time step for ploting 
-dtp = 10;
+dtp = round(Nsteps/50);
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -166,7 +168,7 @@ hold off
 xlabel('Alongshore coordinate (m)')
 ylabel('Cross-shore coordinate (m)')
 title ('To start press any key')
-pause
+pause(0.1)
 clear zetap up vp
 
 
