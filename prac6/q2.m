@@ -49,11 +49,13 @@ C=min(dx,dy)/c0;
 % Es pregunta pel C maxim;
 %C=0.3; 
 r=0.000;
-dt = C/20; % ??? -> WRITE IT AS A FUNCTION OF THE CFL CONDITION, USING min(dx,dy) TO REPRESENT THE SPATIAL GRID SIZE
+divs=[1.4,1.5,10,20];
+for divisor=divs
+dt = C/divisor; % ??? -> WRITE IT AS A FUNCTION OF THE CFL CONDITION, USING min(dx,dy) TO REPRESENT THE SPATIAL GRID SIZE
 % Number of time steps as a function of time step and final time
 Nsteps = floor(TF/dt);
 % Time step for ploting 
-dtp = round(Nsteps/50);
+dtp = round(Nsteps/2);
 
 
 
@@ -158,7 +160,7 @@ for j=2:dyp:N-1
 end
 
 % Show initial free surface and velocity in a contour plot
-figure
+figure(1)
 pcolor(x,y,zetap)
 shading flat
 colorbar
@@ -316,6 +318,7 @@ for nn=1:Nsteps
         end
         
         % Show initial free surface and velocity in a contour plot
+        figure(1)
         pcolor(x,y,zetap)
         shading flat
         colorbar
@@ -339,5 +342,9 @@ plot(tvec,zetavec3)
 xlabel('Time')
 ylabel(' max(eta) ; j=3')
 grid on
+hold on
 cmean=indexsum*dx/TF
 relerr=100*abs(cmean-c0)/c0
+end
+legend(['C/' num2str(divs(1))],['C/' num2str(divs(2))],['C/' num2str(divs(3))],['C/' num2str(divs(4))])
+ylim([0.035 0.038])
